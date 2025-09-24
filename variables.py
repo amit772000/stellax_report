@@ -191,7 +191,7 @@ market_rent_index_df = pd.DataFrame(data)
 market_rent_index_reference_date=" 05/24=100"
 
 wws_points_threshold=186
-sector_text="free"
+sector_text=" free "
 
 wws_points_breakdown_dict={
     "Oppervlakte van vertrekken": 79,
