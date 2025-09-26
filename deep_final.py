@@ -431,10 +431,21 @@ def create_pie_chart(sizes, labels, colors=None, explode=None, startangle=90, pc
     if explode is None:
         explode = (0,) * len(sizes)
     
-    wedgeprops = {'edgecolor': 'black', 'linewidth': 1} if wedge_border else None
+    # Create border colors based on section size
+    if wedge_border:
+        # Find the threshold (you can adjust this logic as needed)
+        avg_size = sum(sizes) / len(sizes)
+        border_colors = []
+        for size in sizes:
+            if size < avg_size:  # Small section
+                border_colors.append("#8d99ad")
+            else:  # Bigger section
+                border_colors.append("#832af9")
     
     fig, ax = plt.subplots()
-    ax.pie(
+    
+    # Create the pie chart
+    wedges, texts, autotexts = ax.pie(
         sizes,
         explode=explode,
         labels=None,
@@ -442,9 +453,15 @@ def create_pie_chart(sizes, labels, colors=None, explode=None, startangle=90, pc
         autopct='%1.0f%%',
         shadow=False,
         startangle=startangle,
-        textprops={'fontsize': pct_fontsize, 'fontweight': 'bold'},  # ✅ Bold text
-        wedgeprops=wedgeprops
+        textprops={'fontsize': pct_fontsize, 'fontweight': 'bold'},
     )
+    
+    # Apply custom border colors if wedge_border is True
+    if wedge_border:
+        for wedge, border_color in zip(wedges, border_colors):
+            wedge.set_edgecolor(border_color)
+            wedge.set_linewidth(1)
+    
     ax.axis('equal')
     ax.legend(labels, loc='center right', bbox_to_anchor=(1.5, 0.5), fontsize=label_fontsize)
    
@@ -1535,7 +1552,7 @@ if __name__ == "__main__":
     explode = (0.1, 0)
     create_pie_chart(sizes, labels, colors=colors, explode=explode)
     page15_chart_img = "assets/charts/chart_page_15.png"
-    insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=0)
+    insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=14)
 
     # Page 16 image
     insert_image("Template_filled.pdf", "assets/pictures/energy_label_C.png", fitz.Rect(30, 165, 290, 280), page_num=15)
