@@ -596,10 +596,10 @@ def _get_impact_df():
 
 def _box_color_for(n):
     if n > 0:
-        return (0.78, 0.94, 0.84)
+        return (199/255, 224/255, 204/255)
     if n == 0:
-        return (0.96, 0.94, 0.80)
-    return (0.96, 0.80, 0.82)
+        return (250/255, 241/255, 215/255)
+    return (243/255, 204/255, 206/255)
 
 
 def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv=268, 
@@ -643,16 +643,27 @@ def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv
         dm = int(row["ΔMV"])
         dm_box_x = col_dmv_center - box_w / 2
         c.setFillColorRGB(*_box_color_for(dm))
-        c.rect(dm_box_x, rect_y, box_w, box_h, stroke=0, fill=1)
+        c.rect(dm_box_x, rect_y, box_w - 17, box_h, stroke=0, fill=1)
 
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_vv_center, text_baseline, f"€{format_number(row['VV'])}")
-        c.setFillColorRGB(0, 0, 0)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
         c.drawCentredString(col_dvv_center, text_baseline, format_short(int(row["ΔVV"])))
+        
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)                
+        c.setLineWidth(2)        
+        c.line(col_vv_center + 45, text_baseline - 5, col_vv_center + 161, text_baseline - 5)
+
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_mv_center, text_baseline, f"€{format_number(row['MV'])}")
-        c.setFillColorRGB(0, 0, 0)
-        c.drawCentredString(col_dmv_center, text_baseline, format_short(int(row["ΔMV"])))
+        c.setFillColorRGB(60/255, 60/255, 60/255)
+        c.drawCentredString(col_dmv_center - 9, text_baseline, format_short(int(row["ΔMV"])))
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)        
+        c.setLineWidth(2)
+        c.line(col_vv_center + 255, text_baseline - 5, col_vv_center + 370, text_baseline - 5)
 
     row_ys_lower = [348 - i*17 for i in range(10)]
 
@@ -669,17 +680,28 @@ def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv
         dr = int(row["ΔRent"])
         dr_box_x = col_dmv_center - box_w / 2
         c.setFillColorRGB(*_box_color_for(dr))
-        c.rect(dr_box_x, rect_y, box_w, box_h, stroke=0, fill=1)
+        c.rect(dr_box_x, rect_y, box_w - 17, box_h, stroke=0, fill=1)
 
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_vv_center, text_baseline, f"{int(row['WWS'])}")
-        c.setFillColorRGB(0, 0, 0)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
         c.drawCentredString(col_dvv_center, text_baseline, str(int(row["ΔWWS"])))
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)                
+        c.setLineWidth(2)        
+        c.line(col_vv_center + 45, text_baseline - 5, col_vv_center + 161, text_baseline - 5)
+
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_mv_center, text_baseline, f"€{format_number(row['Rent'])}")
         dr_text = f"€{format_short(dr)}" if dr != 0 else "€0"
-        c.setFillColorRGB(0, 0, 0)
-        c.drawCentredString(col_dmv_center, text_baseline, dr_text)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
+        c.drawCentredString(col_dmv_center - 9, text_baseline, dr_text)
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)        
+        c.setLineWidth(2)
+        c.line(col_vv_center + 255, text_baseline - 5, col_vv_center + 370, text_baseline - 5)
 
 
 # Table drawing functions
@@ -1243,7 +1265,7 @@ def draw_energy_label_page(c, w, h):
         col_mv=335,
         col_dmv=422,
         box_w=115,
-        box_h=15,
+        box_h=17,
         font_name="Regular",
         font_size=10
     )
@@ -1384,7 +1406,7 @@ if __name__ == "__main__":
     explode = (0.1, 0)
     create_pie_chart(sizes, labels, colors=colors, explode=explode)
     page15_chart_img = "assets/charts/chart_page_15.png"
-    insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=14)
+    insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=0)
 
     # Page 16 image
     insert_image("Template_filled.pdf", "assets/pictures/energy_label_C.png", fitz.Rect(30, 165, 290, 280), page_num=15)
