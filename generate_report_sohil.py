@@ -850,7 +850,7 @@ def draw_page11(c, w, h):
     c.setFillColorRGB(130/255, 130/255, 130/255)
     draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
 
-filler.add_overlay(10, draw_page11)
+# filler.add_overlay(10, draw_page11)
 
 # ---------- Page 13 ----------
 def return_on_equity_table_page_13(c):
@@ -956,9 +956,8 @@ def draw_page14(c, w, h):
 
 # ---------- Page 15 ----------
 def draw_page15(c, w, h):
-    c.setFont("Light", 10)
-    c.setFillColorRGB(130/255, 130/255, 130/255)
-    draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
+    c.setFont("Regular", 10)
+    c.drawString(200, 609, f"{variables.address}")
 
     c.drawString(95, 528, f"{variables.sqm}")
     c.drawString(160, 528, f"{format_euro(variables.effective_rent_yearly)}")
@@ -997,7 +996,11 @@ def draw_page15(c, w, h):
     c.setFont("Bold", 10)
     c.drawString(470, 117, f"{format_euro(variables.rented_value)}")
 
-# filler.add_overlay(14, draw_page15)
+    c.setFont("Light", 10)
+    c.setFillColorRGB(130/255, 130/255, 130/255)
+    draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
+
+filler.add_overlay(14, draw_page15)
 
 
 # ---------- Save ----------
@@ -1068,21 +1071,21 @@ filler.save("Template_filled.pdf")
 # plot_rent_chart_page_9_img = "assets/charts/plot_rent_chart_page_9.png"
 # insert_image("Template_filled.pdf", plot_rent_chart_page_9_img, fitz.Rect(70, 450, 530, 900), page_num=0)
 
-page11_chart_img = "assets/charts/pie_chart_page_11.png"
-pie_chart_percentage_page_8(variables.market_rent_demand_score, color="#D3D3D3", save_path=page11_chart_img)
-insert_image("Template_filled.pdf", page11_chart_img, fitz.Rect(100, 155, 240, 295), page_num=0)
+# page11_chart_img = "assets/charts/pie_chart_page_11.png"
+# pie_chart_percentage_page_8(variables.market_rent_demand_score, color="#D3D3D3", save_path=page11_chart_img)
+# insert_image("Template_filled.pdf", page11_chart_img, fitz.Rect(100, 155, 240, 295), page_num=0)
 
-page11_line_chart_img = "assets/charts/line_chart_page_11.png"
-create_line_chart_page_8(variables.market_rent_index_df, x_col="Date", y_col="Rent_index", save_path=page11_line_chart_img)
-insert_image("Template_filled.pdf", page11_line_chart_img, fitz.Rect(63, 480, 520, 860), page_num=0)
+# page11_line_chart_img = "assets/charts/line_chart_page_11.png"
+# create_line_chart_page_8(variables.market_rent_index_df, x_col="Date", y_col="Rent_index", save_path=page11_line_chart_img)
+# insert_image("Template_filled.pdf", page11_line_chart_img, fitz.Rect(63, 480, 520, 860), page_num=0)
 
-# sizes = [variables.running_costs_to_effective_rent_percentage, variables.net_rental_income_to_effective_rent_percentage]  # The slice sizes (they'll be converted to percentages)
-# labels = ['Exploitatiekosten', 'Nettohuurinkomsten']  # Legend labels
-# colors = ['#F0E6F7', '#C8A8C8']  # Optional: Colors for each slice
-# explode = (0.1, 0)  # Optional: Offset the first slice slightly
+sizes = [variables.running_costs_to_effective_rent_percentage, variables.net_rental_income_to_effective_rent_percentage]  # The slice sizes (they'll be converted to percentages)
+labels = ['Exploitatiekosten', 'Nettohuurinkomsten']  # Legend labels
+colors = ['#F0E6F7', '#C8A8C8']  # Optional: Colors for each slice
+explode = (0.1, 0)  # Optional: Offset the first slice slightly
 
-# create_pie_chart(sizes, labels, colors=colors, explode=explode)
-# page15_chart_img = "assets/charts/chart_page_15.png"
-# insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=0)
+create_pie_chart(sizes, labels, colors=colors, explode=explode)
+page15_chart_img = "assets/charts/chart_page_15.png"
+insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=0)
 
 print("✅ Multi-page PDF generated: Template_filled.pdf")

@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 import numpy as np
+import pandas as pd
 
 def create_price_development_chart(dates, values, title="Price development Amsterdam", 
                                  subtitle="(Index, 05/24=100)", y_min=None, y_max=None):
@@ -81,3 +82,75 @@ create_price_development_chart(dates_example, values_example, y_min=97, y_max=10
 # values_custom = [95, 97, 98, 99, 100, 102]
 # create_price_development_chart(dates_custom, values_custom, 
 #                               title="Custom Price Index", subtitle="(Index, Jan/24=95)")
+
+# def create_line_chart_page_7(df, x_col='Bid_offered', y_col='Chance_of_winning_pct', 
+#                       x_label=None, y_label=None, color='purple', marker='o', 
+#                       figsize=(5, 3), save_path="assets/charts/line_chart.png",
+#                       label_fontsize=8, tick_fontsize=4):
+#     """
+#     Creates a dynamic line chart similar to the attached image.
+    
+#     Parameters:
+#     - df: pandas DataFrame containing the data
+#     - x_col: column name for x-axis values (default 'Bid_offered')
+#     - y_col: column name for y-axis values (default 'Chance_of_winning_pct')
+#     - x_label: optional label for x-axis (defaults to formatted x_col)
+#     - y_label: optional label for y-axis (defaults to formatted y_col with '%')
+#     - color: line and marker color (default 'purple')
+#     - marker: marker style (default 'o' for circles)
+#     - figsize: tuple for figure size (default (5, 3) for a smaller chart)
+#     - save_path: path to save the PNG (default "assets/charts/line_chart.png")
+#     - label_fontsize: font size for axis labels (default 8 for smaller)
+#     - tick_fontsize: font size for axis ticks (default 6 for smaller, e.g., for 0%, 20% on y-axis and €450,000 on x-axis)
+    
+#     Example usage with your data:
+#     data = {
+#         "Bid_offered": [450000, 475000, 500000, 525000, 550000, 575000, 600000, 625000],
+#         "Chance_of_winning_pct": [5, 13, 28, 47, 66, 81, 91, 96]
+#     }
+#     bid_vs_winning_chance_df = pd.DataFrame(data)
+#     create_line_chart(bid_vs_winning_chance_df)
+#     """
+#     if x_label is None:
+#         x_label = x_col.replace('_', ' ').title()
+#     if y_label is None:
+#         y_label = y_col.replace('_', ' ').title() + ' (%1)'
+    
+#     fig, ax = plt.subplots(figsize=figsize)
+    
+#     # Plot the line with markers
+#     ax.plot(df[x_col], df[y_col], color=color, marker=marker, linestyle='-', linewidth=2)
+    
+#     # Set y-axis as percentage
+#     ax.set_ylabel(y_label, fontsize=label_fontsize)
+#     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{int(y)}%'))
+#     ax.set_ylim(0, 100)
+    
+#     # Set x-axis with euro formatting
+#     ax.set_xlabel(x_label, fontsize=label_fontsize)
+#     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'€{x:,.0f}'))
+    
+#     # Set tick font sizes
+#     ax.tick_params(axis='both', which='major', labelsize=tick_fontsize)
+    
+#     # Add grid lines
+#     ax.grid(True, which='major', axis='y', linestyle='-', alpha=0.5)
+    
+#     # Remove top and right spines
+#     ax.spines['top'].set_visible(False)
+#     ax.spines['right'].set_visible(False)
+    
+#     plt.tight_layout()
+#     plt.show()
+    
+#     # # Save as transparent PNG
+#     # plt.savefig(save_path, format="png", transparent=True, dpi=300)
+#     # plt.close(fig)
+
+# data = {
+#     "Bid_offered": [450000, 475000, 500000, 525000, 550000, 575000, 600000, 625000],
+#     "Chance_of_winning_pct": [5, 13, 28, 47, 66, 81, 91, 96]
+# }
+
+# bid_vs_winning_chance_df = pd.DataFrame(data)
+# create_line_chart_page_7(bid_vs_winning_chance_df)

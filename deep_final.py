@@ -10,12 +10,13 @@ import variables
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.patches import FancyBboxPatch
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Circle
 import matplotlib.patches as patches
 import numpy as np
 import statsmodels.api as sm
 import pandas as pd
 from matplotlib.ticker import MultipleLocator
+from matplotlib.transforms import Bbox
 
 # Register fonts
 pdfmetrics.registerFont(TTFont('Bold', 'assets/fonts/Inter-Bold.ttf'))
@@ -217,128 +218,160 @@ def format_with_percent_number(val):
 
 
 # Chart functions
-def market_rent_range_chart():
+def market_rent_range_chart_page_3():
     fig, ax1 = plt.subplots(figsize=(12, 3))
     fig.patch.set_facecolor('white')
     ax1.set_facecolor('white')
 
+    # Data
     categories = ['Upper bound', 'Expected value', 'Lower bound']
     values = [variables.vacant_value_high, variables.vacant_value, variables.vacant_value_low]
-    colors = ['#c794fb', '#c794fb', '#c794fb']
+    colors = ['#c794fb'] * 3  # same color for all
 
     bar_height = 0.4
     y_positions = [2, 1, 0]
 
+    # Bars with rounded right edges
     for i, (cat, val, color) in enumerate(zip(categories, values, colors)):
-        bar_width = val / 600000 * 6
-        rect_width = bar_width - bar_height/2
-        rect = Rectangle((0, y_positions[i] - bar_height/2), rect_width, bar_height, 
-                        facecolor=color, edgecolor='none')
+        bar_width = val / 600000 * 6  # normalized width
+        rect_width = bar_width - bar_height / 2
+
+        # Rectangle body
+        rect = Rectangle(
+            (0, y_positions[i] - bar_height / 2), rect_width, bar_height,
+            facecolor=color, edgecolor='none'
+        )
         ax1.add_patch(rect)
-        
-        circle = patches.Circle((rect_width, y_positions[i]), bar_height/2,
-                            facecolor=color, edgecolor='none')
+
+        # Rounded right end
+        circle = Circle(
+            (rect_width, y_positions[i]), bar_height / 2,
+            facecolor=color, edgecolor='none'
+        )
         ax1.add_patch(circle)
 
+        # ✅ Label close to the end of the bar
+        ax1.text(
+            rect_width + 0.3, y_positions[i], f"€{val:,}",
+            va='center', ha='left',
+            fontsize=14, color='#000000'
+        )
+
+    # Axis settings
     ax1.set_xlim(-0.2, 6.2)
     ax1.set_ylim(-0.5, 2.5)
     ax1.set_yticks(y_positions)
-    ax1.set_yticklabels(categories, fontsize=14, color='#4a5568')
+    ax1.set_yticklabels(categories, fontsize=14, color='#000000')
+
+    # X ticks & labels
     ax1.set_xticks([0, 1, 2, 3, 4, 5, 6])
     tick_labels = ['€ -'] + [f'€ {val:,}' for val in range(100000, 600001, 100000)]
-    ax1.set_xticklabels(tick_labels)
+    ax1.set_xticklabels(tick_labels, fontsize=14, color='#4a5568')
 
-    value_labels = [f"€{val:,} " for val in [variables.vacant_value_high, variables.vacant_value, variables.vacant_value_low]]
-    for i, (val, label) in enumerate(zip(values, value_labels)):
-        bar_width = val / 600000 * 6
-        ax1.text(6.5, y_positions[i], label, 
-                va='center', ha='left', fontsize=16, color='#4a5568', fontweight='normal')
+    # Gridlines (behind bars)
+    ax1.set_axisbelow(True)
+    ax1.grid(axis='x', color='#D3D3D3', linestyle='-', linewidth=1, alpha=1)
 
-    for x in [1, 2, 3, 4, 5]:
-        ax1.axvline(x, color='#e2e8f0', linestyle='-', linewidth=1, alpha=0.8)
-
+    # Remove spines
     for spine in ax1.spines.values():
         spine.set_visible(False)
-    ax1.tick_params(axis='y', length=0, labelsize=16)
-    ax1.tick_params(axis='x', length=0, labelsize=14, colors='#718096')
+
+    # Hide ticks
+    ax1.tick_params(axis='y', length=0)
+    ax1.tick_params(axis='x', length=0)
+
     plt.tight_layout()
-    
     chart_path = "assets/charts/vacant_value_chart.png"
     plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
 
-
-def chart2():
-    fig, ax2 = plt.subplots(figsize=(12, 5))
-    fig.patch.set_facecolor('white')
-    ax2.set_facecolor('white')
-
+def plot_rent_chart_page_3():
     df = variables.vacant_values_per_sqm_comps_df
-
-    ax2.scatter(
-        df["Sqm"], df["Price_m2"],
-        c='none', edgecolors='#9333ea',
-        alpha=0.7, s=80, linewidth=2
-    )
-
     sqm_ref = variables.sqm
     low_per_sqm = variables.vacant_value_low / sqm_ref
     expected_per_sqm = variables.vacant_value / sqm_ref
     high_per_sqm = variables.vacant_value_high / sqm_ref
 
-    ax2.scatter([sqm_ref], [low_per_sqm], color="#9333ea", s=120, zorder=5)
-    ax2.scatter([sqm_ref], [expected_per_sqm], color="#9333ea", s=120, zorder=5)
-    ax2.scatter([sqm_ref], [high_per_sqm], color="#9333ea", s=120, zorder=5)
+    fig, ax = plt.subplots(figsize=(11, 5))
+    ax.scatter(
+        df['Sqm'], df['Price_m2'],
+        c='none', edgecolors='#7F00FF',
+        alpha=0.9, s=90, linewidth=1.5
+    )
+    ax.set_xlim(35, 150)
+    ax.set_ylim(4250, 8250)
 
-    ax2.annotate("Lower bound",
-                 xy=(sqm_ref, low_per_sqm),
-                 xytext=(sqm_ref + 10, low_per_sqm - 100),
-                 arrowprops=dict(arrowstyle="->", color="black"),
-                 fontsize=12, ha="left", va="center")
-
-    ax2.annotate("Expected value",
-                 xy=(sqm_ref, expected_per_sqm),
-                 xytext=(sqm_ref + 10, expected_per_sqm),
-                 arrowprops=dict(arrowstyle="->", color="black"),
-                 fontsize=12, ha="left", va="center")
-
-    ax2.annotate("Upper bound",
-                 xy=(sqm_ref, high_per_sqm),
-                 xytext=(sqm_ref + 10, high_per_sqm + 100),
-                 arrowprops=dict(arrowstyle="->", color="black"),
-                 fontsize=12, ha="left", va="center")
-
-    ax2.set_xlim(35, 150)
-    ax2.set_ylim(4250, 8250)
-
-    ax2.set_xticks([40, 60, 80, 100, 120, 140])
-    ax2.set_xticklabels(
+    # Ticks
+    ax.set_xticks([40, 60, 80, 100, 120, 140])
+    ax.set_xticklabels(
         ['40 m²', '60 m²', '80 m²', '100 m²', '120 m²', '140 m²'],
         fontsize=12, color='#718096'
     )
-    ax2.set_yticks([4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250])
-    ax2.set_yticklabels(
+    ax.set_yticks([4250, 4750, 5250, 5750, 6250, 6750, 7250, 7750, 8250])
+    ax.set_yticklabels(
         ['€ 4,250', '€ 4,750', '€ 5,250', '€ 5,750', '€ 6,250',
          '€ 6,750', '€ 7,250', '€ 7,750', '€ 8,250'],
-        fontsize=14, color='#718096'
+        fontsize=12, color='#718096'
     )
 
-    ax2.xaxis.labelpad = 10
-    ax2.yaxis.labelpad = 10
+    # Values
+    lower = low_per_sqm
+    expected = expected_per_sqm
+    upper = high_per_sqm
 
-    ax2.spines['top'].set_visible(False)
-    ax2.spines['right'].set_visible(False)
-    ax2.spines['bottom'].set_color('#a1a5ab')
-    ax2.spines['left'].set_color("#a1a5ab")
-    ax2.tick_params(colors='#718096', length=0)
+    # ✅ Square bracket instead of plain vline
+    rect_height = upper - lower
+    rect = Rectangle(
+        (sqm_ref - 1, lower),   # x, y (slightly offset in x so it's visible)
+        width=1.5,                # narrow rectangle around the line
+        height=rect_height,
+        fill=False,
+        edgecolor='black',
+        linewidth=1
+    )
+    ax.add_patch(rect)
 
+    # Points at values
+    ax.plot(sqm_ref, upper, '', color='#9333ea', markersize=8, zorder=5) 
+    ax.plot(sqm_ref, expected, '', color='#9333ea', markersize=8, zorder=5) 
+    ax.plot(sqm_ref, lower, '', color='#9333ea', markersize=8, zorder=5)
+
+    # Labels with arrows
+    label_offset = 8
+    ax.annotate(
+        'Upper bound', xy=(sqm_ref, upper),
+        xytext=(sqm_ref + label_offset, upper),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+    ax.annotate(
+        'Expected value', xy=(sqm_ref, expected),
+        xytext=(sqm_ref + label_offset, expected),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+    ax.annotate(
+        'Lower bound', xy=(sqm_ref, lower),
+        xytext=(sqm_ref + label_offset, lower),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+
+    # Styling
+    ax.xaxis.labelpad = 10
+    ax.yaxis.labelpad = 10
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_color('#a1a5ab')
+    ax.spines['left'].set_color("#a1a5ab")
+    ax.tick_params(colors='#718096', length=0)
     plt.tight_layout()
+
     chart_path = "assets/charts/chart2.png"
     plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
 
-
-def create_dynamic_price_chart(data_df, vacant_value_final_price_paid, price_column='Price_paid'):
+def line_chart_page_5(data_df, vacant_value_final_price_paid, price_column='Price_paid'):
     fig, ax = plt.subplots(figsize=(12, 5))
     fig.patch.set_facecolor('white')
     ax.set_facecolor('white')
@@ -346,9 +379,9 @@ def create_dynamic_price_chart(data_df, vacant_value_final_price_paid, price_col
     asking_prices = data_df['Asking_price'].values
     price_values = data_df[price_column].values
     
-    ax.plot(asking_prices, price_values, color='#A855F7', linewidth=2.5, 
-            marker='o', markersize=6, markerfacecolor='#A855F7', 
-            markeredgecolor='#A855F7', alpha=0.9)
+    ax.plot(asking_prices, price_values, color='#C58FFB', linewidth=2.5, 
+            marker='o', markersize=9, markerfacecolor='#C58FFB', 
+            markeredgecolor='#C58FFB', alpha=1)
     
     max_idx = np.argmax(price_values)
     max_value = vacant_value_final_price_paid
@@ -359,8 +392,7 @@ def create_dynamic_price_chart(data_df, vacant_value_final_price_paid, price_col
                 fontsize=14, color='black',
                 ha='center', va='bottom',
                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#e8e8e8', edgecolor='none', alpha=1.0),
-                arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0', 
-                              color='#e8e8e8', lw=1, alpha=1.0))
+                arrowprops=dict(arrowstyle='-', connectionstyle='arc3,rad=0', color='#e8e8e8', lw=1, alpha=1.0))
     
     def currency_formatter_euro(x, p):
         return f'€{x:,.0f}'
@@ -386,13 +418,12 @@ def create_dynamic_price_chart(data_df, vacant_value_final_price_paid, price_col
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_color('#a1a5ab')
     ax.spines['left'].set_color("#a1a5ab")    
-    ax.tick_params(axis='both', labelsize=14, colors='#718096')
+    ax.tick_params(axis='both', labelsize=14, colors='#718096', pad=15)
     
     plt.tight_layout()
     chart_path = "assets/charts/chart_page_6.png"
     plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
-
 
 def create_pie_chart(sizes, labels, colors=None, explode=None, startangle=90, pct_fontsize=14, label_fontsize=12, wedge_border=True):
     if colors is None:
@@ -400,82 +431,150 @@ def create_pie_chart(sizes, labels, colors=None, explode=None, startangle=90, pc
     if explode is None:
         explode = (0,) * len(sizes)
     
-    wedgeprops = {'edgecolor': 'black', 'linewidth': 1} if wedge_border else None
+    # Create border colors based on section size
+    if wedge_border:
+        # Find the threshold (you can adjust this logic as needed)
+        avg_size = sum(sizes) / len(sizes)
+        border_colors = []
+        for size in sizes:
+            if size < avg_size:  # Small section
+                border_colors.append("#8d99ad")
+            else:  # Bigger section
+                border_colors.append("#832af9")
     
     fig, ax = plt.subplots()
-    ax.pie(sizes, explode=explode, labels=None, colors=colors, autopct='%1.0f%%', 
-           shadow=False, startangle=startangle, textprops={'fontsize': pct_fontsize},
-           wedgeprops=wedgeprops)
+    
+    # Create the pie chart
+    wedges, texts, autotexts = ax.pie(
+        sizes,
+        explode=explode,
+        labels=None,
+        colors=colors,
+        autopct='%1.0f%%',
+        shadow=False,
+        startangle=startangle,
+        textprops={'fontsize': pct_fontsize, 'fontweight': 'bold'},
+    )
+    
+    # Apply custom border colors if wedge_border is True
+    if wedge_border:
+        for wedge, border_color in zip(wedges, border_colors):
+            wedge.set_edgecolor(border_color)
+            wedge.set_linewidth(1)
+    
     ax.axis('equal')
     ax.legend(labels, loc='center right', bbox_to_anchor=(1.5, 0.5), fontsize=label_fontsize)
+   
     plt.tight_layout()
     chart_path = "assets/charts/chart_page_15.png"
     plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
 
-
-def create_line_chart_page_7(df, x_col='Bid_offered', y_col='Chance_of_winning_pct', 
-                      color='#A855F7', marker='o', figsize=(5, 3), save_path="assets/charts/line_chart_page_7.png",
-                      label_fontsize=8, tick_fontsize=6):
+def line_chart_page_6(df):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('white')
     
-    fig, ax = plt.subplots(figsize=figsize)
-    ax.plot(df[x_col], df[y_col], color=color, marker=marker, linestyle='-', linewidth=1)
-    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{int(y)}%'))
-    ax.set_ylim(0, 100)
-    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'€{x:,.0f}'))
-    ax.tick_params(axis='both', which='major', labelsize=tick_fontsize)
-    ax.grid(True, which='major', axis='y', linestyle='-', alpha=0.5)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(save_path, format="png", transparent=True, dpi=300)
-    plt.close(fig)
-
-
-def pie_chart_percentage_page_8(value, color, text_color="black", save_path=None):
-    percentage = round(value * 100)
-    sizes = [percentage, 100 - percentage]
-    colors = [color, "#f8f6fc"]
-
-    fig, ax = plt.subplots(figsize=(4,4))
-    wedges, _ = ax.pie(
-        sizes, 
-        colors=colors, 
-        startangle=90, 
-        counterclock=False, 
-        wedgeprops=dict(width=0.08)
+    asking_prices = df['Bid_offered'].values
+    price_values = df['Chance_of_winning_pct'].values
+    
+    ax.plot(
+        asking_prices, price_values,
+        color='#C58FFB', linewidth=2.5, 
+        marker='o', markersize=9,
+        markerfacecolor='#C58FFB',   # solid fill
+        markeredgecolor='#C58FFB',   # border same color
+        alpha=1                   # fully opaque
     )
     
-    plt.text(0.05, 0, f"{percentage}%", 
-             ha="center", va="center", 
-             fontsize=45, fontweight="bold", color=text_color)
-    ax.set(aspect="equal")
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'€{x:,.0f}'))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{int(y)}%'))
     
-    if save_path:
-        plt.savefig(save_path, format="png", transparent=True, dpi=150, bbox_inches="tight")
-    else:
-        plt.savefig("assets/charts/pie_chart_page_8.png", format="png", transparent=True, dpi=150, bbox_inches="tight")
+    x_min = min(asking_prices) - 20000
+    x_max = max(asking_prices) + 20000
+    
+    ax.set_xlim(x_min, x_max)
+    # ax.set_ylim(0, 100)
+
+    y_ticks = np.arange(0, 101, 10)
+    ax.set_yticks(y_ticks)
+
+    ax.grid(True, which='major', axis='y', linestyle='-', alpha=0.5)
+    
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)    
+    ax.tick_params(axis='both', labelsize=14, colors='#718096', pad=15)
+    
+    plt.tight_layout()
+    chart_path = "assets/charts/line_chart_page_6.png"
+    plt.savefig(chart_path, format="png", transparent=True, dpi=300)
     plt.close(fig)
 
+def pie_chart_percentage_page_8(value, color="#DFBFFF", text_color="black", bg_color="#FAF7FE", save_path=None):
+    percentage = round(value * 100)
+    sizes = [percentage, 100 - percentage]
+    colors = [color, "white"]
 
-def create_line_chart_page_8(df, x_col="Date", y_col="Price_index", color="#c9a0ff", save_path=None):
-    plt.figure(figsize=(8, 4))
-    plt.plot(df[x_col], df[y_col], color=color, marker="o", linewidth=2, markersize=6)
+    fig, ax = plt.subplots(figsize=(4, 4))
+
+    # ✅ set figure + axes background color
+    fig.patch.set_facecolor(bg_color)
+    ax.set_facecolor(bg_color)
+
+    wedges, _ = ax.pie(
+        sizes,
+        colors=colors,
+        startangle=90,
+        counterclock=False,
+        wedgeprops=dict(width=0.09, edgecolor="none", linewidth=0)
+    )
+
+    plt.text(
+        0, 0, f"{percentage}%",
+        ha="center", va="center",
+        fontsize=43, fontweight="bold", color=text_color
+    )
+    ax.set(aspect="equal")
+
+    # Remove margins
+    # plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+    # ✅ save with background color (not transparent)
+    if save_path:
+        plt.savefig(save_path, format="png", transparent=False, dpi=400, bbox_inches="tight", pad_inches=-0.3)
+    else:
+        # plt.savefig("assets/charts/pie_chart_page_8.png", format="png", transparent=False, dpi=400, bbox_inches="tight")
+        plt.savefig("assets/charts/pie_chart_page_8.png", format="png", transparent=False, dpi=400, bbox_inches='tight', pad_inches=-0.3)
+
+    plt.close(fig)
+
+def line_chart_page_8(df, x_col="Date", y_col="Price_index", save_path=None):
+    plt.figure(figsize=(12, 6))
+    plt.plot(
+        df[x_col], df[y_col],
+        color='#C58FFB', linewidth=2.5, 
+        marker='o', markersize=9,
+        markerfacecolor='#C58FFB',   # solid fill
+        markeredgecolor='#C58FFB',   # border same color
+        alpha=1                   # fully opaque
+    )
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.xticks(rotation=45, ha="right")
     plt.margins(x=0.05, y=0.1)
+
     ax = plt.gca()
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
+
+    y_ticks = np.arange(97, 107, 1)
+    ax.set_yticks(y_ticks)
     
-    y_min, y_max = df[y_col].min(), df[y_col].max()
-    y_range = y_max - y_min
-    step = max(0.5, round(y_range / 10, 1))
-    ax.yaxis.set_major_locator(MultipleLocator(step))
-    ax.tick_params(axis="x", colors="#718096")
-    ax.tick_params(axis="y", colors="#718096")
+    ax.tick_params(axis='both', labelsize=14, colors='#718096', pad=15)
+
     ax.yaxis.grid(True, linestyle="-", alpha=0.6)
     ax.xaxis.grid(False)
     plt.tight_layout()
@@ -486,93 +585,145 @@ def create_line_chart_page_8(df, x_col="Date", y_col="Price_index", color="#c9a0
         plt.savefig("assets/charts/line_chart_page_8.png", format="png", transparent=True, dpi=150, bbox_inches="tight")
     plt.close()
 
-
-def create_market_rent_range_chart_page_9(values, categories=None, max_value=None, save_path=None):
-    if categories is None:
-        categories = ['Upper bound', 'Expected value', 'Lower bound']
-    if max_value is None:
-        max_value = max(values)
-
+def market_rent_range_chart_page_9():
     fig, ax1 = plt.subplots(figsize=(12, 3))
     fig.patch.set_facecolor('white')
     ax1.set_facecolor('white')
 
-    def scale(val):
-        return val / max_value * 6
+    # Data
+    categories = ['Upper bound', 'Expected value', 'Lower bound']
+    values = [variables.market_rent_high, variables.market_rent, variables.market_rent_low]
+    colors = ['#c794fb'] * 3  # same color for all
 
     bar_height = 0.4
     y_positions = [2, 1, 0]
-    colors = ['#c794fb', '#c794fb', '#c794fb']
 
+    # Bars with rounded right edges
     for i, (cat, val, color) in enumerate(zip(categories, values, colors)):
-        bar_width = scale(val)
-        rect_width = bar_width - bar_height/2
-        rect = Rectangle((0, y_positions[i] - bar_height/2), rect_width, bar_height, 
-                         facecolor=color, edgecolor='none')
+        bar_width = val / 3500 * 6  # normalized width
+        rect_width = bar_width - bar_height / 2
+
+        # Rectangle body
+        rect = Rectangle(
+            (0, y_positions[i] - bar_height / 2), rect_width, bar_height,
+            facecolor=color, edgecolor='none'
+        )
         ax1.add_patch(rect)
-        circle = patches.Circle((rect_width, y_positions[i]), bar_height/2, 
-                                facecolor=color, edgecolor='none')
+
+        # Rounded right end
+        circle = Circle(
+            (rect_width, y_positions[i]), bar_height / 2,
+            facecolor=color, edgecolor='none'
+        )
         ax1.add_patch(circle)
 
-    ax1.set_xlim(-0.2, 6.5)
+        # ✅ Label close to the end of the bar
+        ax1.text(
+            rect_width + 0.3, y_positions[i], f"€{val:,}",
+            va='center', ha='left',
+            fontsize=14, color='#000000'
+        )
+
+    # Axis settings
+    ax1.set_xlim(-0.2, 6.2)
     ax1.set_ylim(-0.5, 2.5)
     ax1.set_yticks(y_positions)
-    ax1.set_yticklabels(categories, fontsize=14, color='#4a5568')
+    ax1.set_yticklabels(categories, fontsize=14, color='#000000')
+
+    # X ticks & labels
     ax1.set_xticks([0, 1, 2, 3, 4, 5, 6])
     tick_labels = ['€ -'] + [f'€ {val:,}' for val in range(500, 3500, 500)]
-    ax1.set_xticklabels(tick_labels)
+    ax1.set_xticklabels(tick_labels, fontsize=14, color='#4a5568')
 
-    for i, val in enumerate(values):
-        ax1.text(6.5, y_positions[i], f"€{val:,.0f}", 
-                 va='center', ha='left', fontsize=16, color='#4a5568')
+    # Gridlines (behind bars)
+    ax1.set_axisbelow(True)
+    ax1.grid(axis='x', color='#D3D3D3', linestyle='-', linewidth=1, alpha=1)
 
-    for x in range(1, 6):
-        ax1.axvline(x, color='#e2e8f0', linestyle='-', linewidth=1, alpha=0.8)
-
+    # Remove spines
     for spine in ax1.spines.values():
         spine.set_visible(False)
+
+    # Hide ticks
     ax1.tick_params(axis='y', length=0)
-    ax1.tick_params(axis='x', length=0, labelsize=14, colors='#718096')
+    ax1.tick_params(axis='x', length=0)
 
     plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, format="png", transparent=True, dpi=150, bbox_inches="tight")
-    else:
-        plt.savefig("assets/charts/vacant_value_chart.png", format="png", transparent=True, dpi=150, bbox_inches="tight")
+    chart_path = "assets/charts/vacant_value_chart_page_9.png"
+    plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
 
+def plot_rent_chart_page_9():
+    df = variables.market_rent_per_sqm_comps_df
+    sqm_ref = variables.sqm
+    low_per_sqm = variables.market_rent_low / sqm_ref
+    expected_per_sqm = variables.market_rent / sqm_ref
+    high_per_sqm = variables.market_rent_high / sqm_ref
 
-def plot_rent_chart_page_9(df, sqm_ref, low_per_sqm, expected_per_sqm, high_per_sqm):
     fig, ax = plt.subplots(figsize=(11, 5))
-    ax.scatter(df['Sqm'], df['Rent_m2'], c='none', edgecolors='#9333ea', alpha=0.7, s=80, linewidth=2)
+    ax.scatter(
+        df['Sqm'], df['Rent_m2'],
+        c='none', edgecolors='#7F00FF',
+        alpha=0.9, s=90, linewidth=1.5
+    )
     ax.set_xlim(35, 150)
     ax.set_ylim(15, 50)
 
+    # Ticks
     ax.set_xticks([40, 60, 80, 100, 120, 140])
-    ax.set_xticklabels(['40 m²', '60 m²', '80 m²', '100 m²', '120 m²', '140 m²'],fontsize=12, color='#718096')
+    ax.set_xticklabels(
+        ['40 m²', '60 m²', '80 m²', '100 m²', '120 m²', '140 m²'],
+        fontsize=12, color='#718096'
+    )
     ax.set_yticks([15, 20, 25, 30, 35, 40, 45, 50])
-    ax.set_yticklabels(['€ 15', '€ 20', '€ 25', '€ 30', '€ 35', '€ 40', '€ 45', '€ 50'], fontsize=12, color='#718096')
-    
+    ax.set_yticklabels(
+        ['€ 15', '€ 20', '€ 25', '€ 30', '€ 35', '€ 40', '€ 45', '€ 50'],
+        fontsize=12, color='#718096'
+    )
+
+    # Values
     lower = low_per_sqm
     expected = expected_per_sqm
     upper = high_per_sqm
-    
-    ax.vlines(sqm_ref, lower, upper, color='black', linewidth=2, zorder=5)
-    ax.plot(sqm_ref, upper, 'o', color='#9333ea', markersize=8, zorder=5)
-    ax.plot(sqm_ref, expected, 'o', color='#9333ea', markersize=8, zorder=5)
-    ax.plot(sqm_ref, lower, 'o', color='#9333ea', markersize=8, zorder=5)
-    
-    label_offset = 5
-    ax.annotate('Upper bound', xy=(sqm_ref, upper), xytext=(sqm_ref + label_offset, upper),
-                arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1),
-                va='center', ha='left', fontsize=13)
-    ax.annotate('Expected value', xy=(sqm_ref, expected), xytext=(sqm_ref + label_offset, expected),
-                arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1),
-                va='center', ha='left', fontsize=13)
-    ax.annotate('Lower bound', xy=(sqm_ref, lower), xytext=(sqm_ref + label_offset, lower),
-                arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1),
-                va='center', ha='left', fontsize=13)
-    
+
+    # ✅ Square bracket instead of plain vline
+    rect_height = upper - lower
+    rect = Rectangle(
+        (sqm_ref - 1, lower),   # x, y (slightly offset in x so it's visible)
+        width=1.5,                # narrow rectangle around the line
+        height=rect_height,
+        fill=False,
+        edgecolor='black',
+        linewidth=1
+    )
+    ax.add_patch(rect)
+
+    # Points at values
+    ax.plot(sqm_ref, upper, '', color='#9333ea', markersize=8, zorder=5) 
+    ax.plot(sqm_ref, expected, '', color='#9333ea', markersize=8, zorder=5) 
+    ax.plot(sqm_ref, lower, '', color='#9333ea', markersize=8, zorder=5)
+
+    # Labels with arrows
+    label_offset = 8
+    ax.annotate(
+        'Upper bound', xy=(sqm_ref, upper),
+        xytext=(sqm_ref + label_offset, upper),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+    ax.annotate(
+        'Expected value', xy=(sqm_ref, expected),
+        xytext=(sqm_ref + label_offset, expected),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+    ax.annotate(
+        'Lower bound', xy=(sqm_ref, lower),
+        xytext=(sqm_ref + label_offset, lower),
+        arrowprops=dict(facecolor='black', arrowstyle='->', linewidth=1.5, shrinkB=7),
+        va='center', ha='left', fontsize=14
+    )
+
+    # Styling
     ax.xaxis.labelpad = 10
     ax.yaxis.labelpad = 10
     ax.spines['top'].set_visible(False)
@@ -581,9 +732,11 @@ def plot_rent_chart_page_9(df, sqm_ref, low_per_sqm, expected_per_sqm, high_per_
     ax.spines['left'].set_color("#a1a5ab")
     ax.tick_params(colors='#718096', length=0)
     plt.tight_layout()
+
     chart_path = "assets/charts/plot_rent_chart_page_9.png"
     plt.savefig(chart_path, format="png", transparent=True)
     plt.close(fig)
+
 
 
 def _get_impact_df():
@@ -596,10 +749,10 @@ def _get_impact_df():
 
 def _box_color_for(n):
     if n > 0:
-        return (0.78, 0.94, 0.84)
+        return (199/255, 224/255, 204/255)
     if n == 0:
-        return (0.96, 0.94, 0.80)
-    return (0.96, 0.80, 0.82)
+        return (250/255, 241/255, 215/255)
+    return (243/255, 204/255, 206/255)
 
 
 def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv=268, 
@@ -643,16 +796,27 @@ def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv
         dm = int(row["ΔMV"])
         dm_box_x = col_dmv_center - box_w / 2
         c.setFillColorRGB(*_box_color_for(dm))
-        c.rect(dm_box_x, rect_y, box_w, box_h, stroke=0, fill=1)
+        c.rect(dm_box_x, rect_y, box_w - 17, box_h, stroke=0, fill=1)
 
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_vv_center, text_baseline, f"€{format_number(row['VV'])}")
-        c.setFillColorRGB(0, 0, 0)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
         c.drawCentredString(col_dvv_center, text_baseline, format_short(int(row["ΔVV"])))
+        
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)                
+        c.setLineWidth(2)        
+        c.line(col_vv_center + 45, text_baseline - 5, col_vv_center + 161, text_baseline - 5)
+
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_mv_center, text_baseline, f"€{format_number(row['MV'])}")
-        c.setFillColorRGB(0, 0, 0)
-        c.drawCentredString(col_dmv_center, text_baseline, format_short(int(row["ΔMV"])))
+        c.setFillColorRGB(60/255, 60/255, 60/255)
+        c.drawCentredString(col_dmv_center - 9, text_baseline, format_short(int(row["ΔMV"])))
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)        
+        c.setLineWidth(2)
+        c.line(col_vv_center + 255, text_baseline - 5, col_vv_center + 370, text_baseline - 5)
 
     row_ys_lower = [348 - i*17 for i in range(10)]
 
@@ -669,17 +833,28 @@ def draw_energy_label_impact_table(c, top_y=566, row_h=None, col_vv=176, col_dvv
         dr = int(row["ΔRent"])
         dr_box_x = col_dmv_center - box_w / 2
         c.setFillColorRGB(*_box_color_for(dr))
-        c.rect(dr_box_x, rect_y, box_w, box_h, stroke=0, fill=1)
+        c.rect(dr_box_x, rect_y, box_w - 17, box_h, stroke=0, fill=1)
 
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_vv_center, text_baseline, f"{int(row['WWS'])}")
-        c.setFillColorRGB(0, 0, 0)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
         c.drawCentredString(col_dvv_center, text_baseline, str(int(row["ΔWWS"])))
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)                
+        c.setLineWidth(2)        
+        c.line(col_vv_center + 45, text_baseline - 5, col_vv_center + 161, text_baseline - 5)
+
         c.setFillColorRGB(*gray)
         c.drawCentredString(col_mv_center, text_baseline, f"€{format_number(row['Rent'])}")
         dr_text = f"€{format_short(dr)}" if dr != 0 else "€0"
-        c.setFillColorRGB(0, 0, 0)
-        c.drawCentredString(col_dmv_center, text_baseline, dr_text)
+        c.setFillColorRGB(60/255, 60/255, 60/255)
+        c.drawCentredString(col_dmv_center - 9, text_baseline, dr_text)
+
+        # Draw bottom border
+        c.setStrokeColorRGB(251, 240, 241)        
+        c.setLineWidth(2)
+        c.line(col_vv_center + 255, text_baseline - 5, col_vv_center + 370, text_baseline - 5)
 
 
 # Table drawing functions
@@ -830,31 +1005,31 @@ def draw_page1(c, w, h):
     c.drawString(376, 257, f"{variables.property_type_source}")
     c.drawString(225, 240, f"{variables.sqm}")
     c.drawString(376, 240, f"{variables.sqm_source}")
-    c.drawString(225, 223, f"{variables.year}")
-    c.drawString(376, 223, f"{variables.year_source}")
-    c.drawString(225, 206, f"{variables.lot_size}")
-    c.drawString(376, 206, f"{variables.lot_size_source}")
-    c.drawString(225, 189, f"{variables.energy_label}")
-    c.drawString(376, 189, f"{variables.energy_label_source}")
-    c.drawString(225, 172, f"{variables.contract_rent}/ma")
-    c.drawString(376, 172, f"{variables.contract_rent_source}")
-    c.drawString(225, 155, f"{variables.wws_points}")
-    c.drawString(376, 155, f"{variables.wws_points_source}")
-    c.drawString(225, 138, f"{variables.wws_points_rent}/ma")
-    c.drawString(376, 138, f"{variables.wws_rent_source}")
-    c.drawString(225, 121, f"{variables.vve}/ma")
-    c.drawString(376, 121, f"{variables.vve_source}")
-    c.drawString(225, 104, f"{variables.erfpact_date} (bought off)")
-    c.drawString(376, 104, f"{variables.erfpact_date_source}")
-    c.drawString(225, 87, f"{variables.erfpacht_amount}/j")
-    c.drawString(376, 87, f"{variables.erfpacht_amount_source}")
+    c.drawString(225, 224, f"{variables.year}")
+    c.drawString(376, 224, f"{variables.year_source}")
+    c.drawString(225, 207, f"{variables.lot_size}")
+    c.drawString(376, 207, f"{variables.lot_size_source}")
+    c.drawString(225, 190, f"{variables.energy_label}")
+    c.drawString(376, 190, f"{variables.energy_label_source}")
+    c.drawString(225, 174, f"{variables.contract_rent}/ma")
+    c.drawString(376, 174, f"{variables.contract_rent_source}")
+    c.drawString(225, 157, f"{variables.wws_points}")
+    c.drawString(376, 157, f"{variables.wws_points_source}")
+    c.drawString(225, 141, f"{variables.wws_points_rent}/ma")
+    c.drawString(376, 141, f"{variables.wws_rent_source}")
+    c.drawString(225, 124, f"{variables.vve}/ma")
+    c.drawString(376, 124, f"{variables.vve_source}")
+    c.drawString(225, 107, f"{variables.erfpact_date} (bought off)")
+    c.drawString(376, 107, f"{variables.erfpact_date_source}")
+    c.drawString(225, 90, f"{variables.erfpacht_amount}/j")
+    c.drawString(376, 90, f"{variables.erfpacht_amount_source}")
 
     draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
 
 
 def draw_page2(c, w, h):
     """Page 2: Property overview"""
-    c.setFont("Bold", 19)
+    c.setFont("Bold", 20)
     c.setFillColorRGB(0, 0, 0)  
     c.drawString(70, 690, f"{variables.address_short}")     
         
@@ -867,10 +1042,10 @@ def draw_page2(c, w, h):
 
 def draw_page3(c, w, h):
     """Page 3: Vacant value and score"""
-    c.setFont("Bold", 30)
+    c.setFont("Bold", 29)
     c.setFillColorRGB(0, 0, 0)
     c.drawString(85, 675, f"€{format_number(variables.vacant_value)}")
-    c.drawString(325, 675, f"{variables.vacant_value_score}%")
+    c.drawString(325, 675, f"{to_percentage(variables.vacant_value_score)}")
 
     c.setFillColorRGB(130/255, 130/255, 130/255)
     draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
@@ -893,7 +1068,7 @@ def draw_page5(c, w, h):
     c.drawString(85, 675, f"€{format_number(variables.vacant_value_optimal_asking)}")
     c.drawString(325, 675, f"€{format_number(variables.vacant_value_final_price_paid)}")      
 
-    create_dynamic_price_chart(variables.asking_vs_price_paid_df, variables.vacant_value_final_price_paid)
+    
 
     c.setFont("Bold", 10)
     c.setFillColorRGB(255, 255, 255)
@@ -1038,11 +1213,11 @@ def draw_page11(c, w, h):
     c.setFillColorRGB(0, 0, 0)
     c.drawString(300, 680, f"{variables.market_rent_market_descitption}")
 
-    c.setFont("Bold", 18)
+    c.setFont("Bold", 19)
     c.setFillColorRGB(0, 0, 0)
-    c.drawString(68, 300, f"Price development {variables.city}")
+    c.drawString(68, 300, f"Rent development {variables.city}")
     c.setFont("Regular", 18)
-    c.drawString(345, 300, f"(Index, {variables.market_rent_index_reference_date})")
+    c.drawString(353, 300, f"(Index, {variables.market_rent_index_reference_date})")
 
     c.setFillColorRGB(130/255, 130/255, 130/255)
     draw_right_aligned(c, variables.address, 540, 23, "Regular", 10)
@@ -1096,21 +1271,21 @@ def draw_wws_points_page(c, w, h):
 
     # Set font and color for the first part
     c.setFont("Bold", 11)
-    c.setFillColorRGB(0.53, 0.81, 0.98)
+    c.setFillColorRGB(255, 255, 255)
     text1 = "It seems like your property is in the"
     text1_width = stringWidth(text1, "Regular", 11)+5
     c.drawString(x_start - text1_width / 2, y, text1)
 
     # Set font and color for sector_text
-    c.setFont("Bold", 11)
-    c.setFillColorRGB(0.2, 0.6, 1)  # blue
+    # c.setFont("Bold", 11)
+    # c.setFillColorRGB(255, 255, 255)  # blue
     text2 = str(sector_text)
     text2_width = stringWidth(text2, "Bold", 11)
     c.drawString(x_start - text1_width / 2 + text1_width, y, f"{text2}")
 
     # Set font and color for the last part
-    c.setFont("Bold", 11)
-    c.setFillColorRGB(1, 1, 1)
+    # c.setFont("Bold", 11)
+    # c.setFillColorRGB(255, 255, 255)
     text3 = "sector!"
     c.drawString(x_start - text1_width / 2 + text1_width + text2_width, y, text3)
 
@@ -1121,7 +1296,7 @@ def draw_wws_points_page(c, w, h):
     left_x = 260
     right_x = 370
     row_h = 17
-    c.setFont("Regular", 11)
+    c.setFont("Bold", 10)
     c.setFillColorRGB(0, 0, 0)
     for i in range(max(len(left_values), len(right_values))):
         if i == 5:
@@ -1243,7 +1418,7 @@ def draw_energy_label_page(c, w, h):
         col_mv=335,
         col_dmv=422,
         box_w=115,
-        box_h=15,
+        box_h=17,
         font_name="Regular",
         font_size=10
     )
@@ -1313,11 +1488,11 @@ if __name__ == "__main__":
     insert_image("Template_filled.pdf", cadastral_map_img, fitz.Rect(70, 460, 530, 800), page_num=2)
 
     # Page 3 charts
-    market_rent_range_chart()
+    market_rent_range_chart_page_3()
     vacant_value_chart_img = "assets/charts/vacant_value_chart.png"
     insert_image("Template_filled.pdf", vacant_value_chart_img, fitz.Rect(70, 200, 530, 650), page_num=3)
 
-    chart2()
+    plot_rent_chart_page_3()
     chart2_img = "assets/charts/chart2.png"
     insert_image("Template_filled.pdf", chart2_img, fitz.Rect(70, 450, 530, 900), page_num=3)
 
@@ -1328,40 +1503,32 @@ if __name__ == "__main__":
 
     # Page 5 chart
     page6_chart_img = "assets/charts/chart_page_6.png"
+    line_chart_page_5(variables.asking_vs_price_paid_df, variables.vacant_value_final_price_paid)
     insert_image("Template_filled.pdf", page6_chart_img, fitz.Rect(70, 210, 530, 900), page_num=5)
 
     # Page 6 chart
-    create_line_chart_page_7(variables.bid_vs_winning_chance_df)
-    page7_chart_img = "assets/charts/line_chart_page_7.png"
-    insert_image("Template_filled.pdf", page7_chart_img, fitz.Rect(0, 450, 550, 710), page_num=6)
+    line_chart_page_6(variables.bid_vs_winning_chance_df)
+    page7_chart_img = "assets/charts/line_chart_page_6.png"
+    insert_image("Template_filled.pdf", page7_chart_img, fitz.Rect(70, 280, 530, 880), page_num=6)
 
     # Page 7 charts
-    pie_chart_percentage_page_8(variables.vacant_value_demand_score, color="#c9a0ff")
+    pie_chart_percentage_page_8(variables.vacant_value_demand_score, color="#DFBFFF")
     page8_chart_img = "assets/charts/pie_chart_page_8.png"
-    insert_image("Template_filled.pdf", page8_chart_img, fitz.Rect(90, 150, 250, 300), page_num=7)
+    # insert_image("Template_filled.pdf", page8_chart_img, fitz.Rect(102, 158, 238, 292), page_num=0)
+    insert_image("Template_filled.pdf", page8_chart_img, fitz.Rect(114, 171, 226, 280), page_num=7)
 
-    create_line_chart_page_8(variables.vacant_value_index_df)
+    line_chart_page_8(variables.vacant_value_index_df)
     page8_line_chart_img = "assets/charts/line_chart_page_8.png"
     insert_image("Template_filled.pdf", page8_line_chart_img, fitz.Rect(63, 480, 520, 860), page_num=7)
 
     # Page 8 charts
-    market_rent_score = variables.market_rent_score
-    market_rent_low = variables.market_rent_low
-    market_rent_high = variables.market_rent_high
-    market_rent_expected = market_rent_low + (market_rent_high - market_rent_low) * market_rent_score
-    values = [market_rent_high, market_rent_expected, market_rent_low]
-    categories = ['Upper bound', 'Expected value', 'Lower bound']
-    create_market_rent_range_chart_page_9(values, categories, max_value=market_rent_high, save_path="assets/charts/vacant_value_chart_page_9.png")
+    market_rent_range_chart_page_9()
     vacant_value_chart_img = "assets/charts/vacant_value_chart_page_9.png"
     insert_image("Template_filled.pdf", vacant_value_chart_img, fitz.Rect(70, 200, 530, 650), page_num=8)
 
-    sqm_ref = variables.sqm
-    low_per_sqm = variables.market_rent_low / sqm_ref
-    expected_per_sqm = variables.market_rent / sqm_ref
-    high_per_sqm = variables.market_rent_high / sqm_ref
-    plot_rent_chart_page_9(variables.market_rent_per_sqm_comps_df, sqm_ref, low_per_sqm, expected_per_sqm, high_per_sqm)
-    plot_rent_chart_page_9_img = "assets/charts/plot_rent_chart_page_9.png"
-    insert_image("Template_filled.pdf", plot_rent_chart_page_9_img, fitz.Rect(70, 450, 530, 900), page_num=8)
+    plot_rent_chart_page_9()
+    chart2_img = "assets/charts/plot_rent_chart_page_9.png"
+    insert_image("Template_filled.pdf", chart2_img, fitz.Rect(70, 450, 530, 900), page_num=8)
 
     # Page 9 image
     rounded_img_10 = "assets/pictures/vacant_values_comps_df.png"
@@ -1370,17 +1537,18 @@ if __name__ == "__main__":
 
     # Page 10 charts
     page11_chart_img = "assets/charts/pie_chart_page_11.png"
-    pie_chart_percentage_page_8(variables.market_rent_demand_score, color="#D3D3D3", save_path=page11_chart_img)
-    insert_image("Template_filled.pdf", page11_chart_img, fitz.Rect(100, 155, 240, 295), page_num=10)
+    pie_chart_percentage_page_8(variables.market_rent_demand_score, color="#CED3DC", save_path=page11_chart_img)
+    # insert_image("Template_filled.pdf", page11_chart_img, fitz.Rect(102, 158, 238, 292), page_num=10)
+    insert_image("Template_filled.pdf", page11_chart_img, fitz.Rect(114, 171, 226, 280), page_num=10)
 
     page11_line_chart_img = "assets/charts/line_chart_page_11.png"
-    create_line_chart_page_8(variables.market_rent_index_df, x_col="Date", y_col="Rent_index", save_path=page11_line_chart_img)
+    line_chart_page_8(variables.market_rent_index_df, x_col="Date", y_col="Rent_index", save_path=page11_line_chart_img)
     insert_image("Template_filled.pdf", page11_line_chart_img, fitz.Rect(63, 480, 520, 860), page_num=10)
 
     # Page 15 chart
     sizes = [variables.running_costs_to_effective_rent_percentage, variables.net_rental_income_to_effective_rent_percentage]
     labels = ['Exploitatiekosten', 'Nettohuurinkomsten']
-    colors = ['#F0E6F7', '#C8A8C8']
+    colors = ['#DADEE5', '#F2E5FF']
     explode = (0.1, 0)
     create_pie_chart(sizes, labels, colors=colors, explode=explode)
     page15_chart_img = "assets/charts/chart_page_15.png"

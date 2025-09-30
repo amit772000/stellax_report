@@ -6,16 +6,16 @@ import sys
 
 class RunOnSaveHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path.endswith("generate_report_amit.py"):
+        if event.src_path.endswith("deep_final.py"):
             print("🔄 File changed! Running script...")
-            subprocess.run([sys.executable, "generate_report_amit.py"])
+            subprocess.run([sys.executable, "deep_final.py"])
 
 if __name__ == "__main__":
     event_handler = RunOnSaveHandler()
     observer = Observer()
     observer.schedule(event_handler, ".", recursive=False)
     observer.start()
-    print("👀 Watching for changes in generate_report_amit.py...")
+    print("👀 Watching for changes in deep_final.py...")
     try:
         while True:
             time.sleep(1)
