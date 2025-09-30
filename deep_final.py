@@ -1316,16 +1316,38 @@ def draw_wws_points_page(c, w, h):
         if i < len(right_values):
             # c.drawString(right_x, y, right_labels[i])
             c.drawString(right_x + 120, y, str(right_values[i]))
-   
+
+def draw_centered_text_safe(c, x,font_name, font_size, y_position, text):
+    """
+    Safe approach that works with or without Inter font
+    """
+    left_boundary = x
+    right_boundary = x+112
+    available_width = right_boundary - left_boundary
+    text_width = stringWidth(text, font_name, font_size)
+    text_width = text_width  # Adjust for Inter Bold
+    x_position = round((left_boundary + (available_width - text_width) / 2)*1.004)
+    c.drawString(x_position, y_position, text)
+    
+    return x_position
+
+
 
 def draw_page13(c, w, h):
     """Page 13: Return on equity"""
-    c.setFont("Bold", 30)
+    text = f"€{format_number(variables.cashflow)}"
+    font_name = "Bold"
+    font_size = 30
+    c.setFont(font_name, font_size)
     c.setFillColorRGB(0, 0, 0)
-    c.drawString(90, 684, f"{format_percentage(variables.gross_yield)}")
-    c.drawString(210, 684, f"{format_percentage(variables.net_yield)}")
-    c.drawString(325, 684, f"{format_percentage(variables.return_on_equity)}")
-    c.drawString(440, 684, f"€{format_number(variables.cashflow)}")    
+    draw_centered_text_safe(c, 68,font_name, font_size, 685, f"€{format_number(variables.gross_yield)}")
+    draw_centered_text_safe(c, 186,font_name, font_size, 685, f"€{format_number(variables.net_yield)}")
+    draw_centered_text_safe(c, 302,font_name, font_size, 685, f"€{format_number(variables.return_on_equity)}")
+    draw_centered_text_safe(c, 418,font_name, font_size, 685, f"€{format_number(variables.cashflow)}")
+    # c.drawString(90, 684, f"{format_percentage(variables.gross_yield)}")
+    # c.drawString(210, 684, f"{format_percentage(variables.net_yield)}")
+    # c.drawString(325, 684, f"{format_percentage(variables.return_on_equity)}")
+    # c.drawString(418, 684, f"€{format_number(variables.cashflow)}")
 
     return_on_equity_table_page_13(c)
     monthly_cash_flow_table_page_13(c)
@@ -1555,6 +1577,8 @@ if __name__ == "__main__":
     insert_image("Template_filled.pdf", page15_chart_img, fitz.Rect(280, 360, 580, 690), page_num=14)
 
     # Page 16 image
-    insert_image("Template_filled.pdf", "assets/pictures/energy_label_C.png", fitz.Rect(30, 165, 290, 280), page_num=15)
+    if variables.energy_label != "-":
+        energy_label_img = f"energy_label_{variables.energy_label}.png"
+        insert_image("Template_filled.pdf", f"assets/pictures/{energy_label_img}", fitz.Rect(30, 165, 290, 280), page_num=15)
 
     print("✅ Multi-page PDF generated: Template_filled.pdf")
