@@ -1,0 +1,7 @@
+1. please install required packages
+2. run script using following command
+python report.py
+
+3. once script will be run successfully it will generate template_filled.pdf report file based values from variables.py
+
+4. Report_template.pdf file will be always have to kept there because script using that file to generate final report pdf file called Template_filled.pdf
