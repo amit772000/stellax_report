@@ -1275,10 +1275,21 @@ def draw_wws_points_page(c, w, h):
     wws_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points - min_points) / (max_points - min_points)
     threshold_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points_threshold - min_points) / (max_points - min_points)
 
-    # Draw the horizontal line
+    # Draw the horizontal line with an arrow at the end
     c.setStrokeColorRGB(0.3, 0.3, 0.3)  # Dark gray line
     c.setLineWidth(1)
     c.line(bar_x0, bar_y, bar_x1, bar_y)
+    c.setFillColorRGB(0.3, 0.3, 0.3)  # Dark gray arrow
+    c.setLineWidth(1)
+    arrow_length = 6
+    arrow_width = 4
+    path = c.beginPath()
+    path.moveTo(bar_x1, bar_y)
+    path.lineTo(bar_x1 - arrow_length, bar_y - arrow_width/2)
+    path.lineTo(bar_x1 - arrow_length, bar_y + arrow_width/2)
+    path.lineTo(bar_x1, bar_y)
+    path.close()
+    c.drawPath(path, stroke=1, fill=1)
 
     # Draw threshold point (purple dot) - smaller
     c.setFillColorRGB(0.58, 0.2, 0.8)  # Purple color
