@@ -1252,22 +1252,99 @@ def draw_wws_points_page(c, w, h):
     bar_x1 = 530
     bar_y = 475
 
-    
-    min_points = 30
-    max_points = 500
-    threshold = 186
-    threshold_x = bar_x0 + (bar_x1 - bar_x0) * (threshold - min_points) / (max_points - min_points)
-    c.setFillColorRGB(0.8, 0.8, 1)
-    
-
     # Draw wws_points bubble
+
     wws_points = variables.wws_points
+    wws_points_threshold = variables.wws_points_threshold
+    
+    # Calculate dynamic min and max with padding
+    min_points = min(wws_points, wws_points_threshold) - 20
+    max_points = max(wws_points, wws_points_threshold) + 20
+        
+    threshold_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points_threshold - min_points) / (max_points - min_points)
+    c.setFillColorRGB(0.8, 0.8, 1)
+
+    # Ensure reasonable range
+    if max_points - min_points < 50:
+        # Add more padding if range is too small
+        center = (min_points + max_points) / 2
+        min_points = center - 25
+        max_points = center + 25
+
+    # Calculate positions
     wws_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points - min_points) / (max_points - min_points)
-    c.setFillColorRGB(0.2, 0.6, 1)
-    c.circle(wws_x, bar_y, 7, stroke=0, fill=1)
-    c.setFont("Regular", 10)
+    threshold_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points_threshold - min_points) / (max_points - min_points)
+
+    # Draw the horizontal line
+    c.setStrokeColorRGB(0.3, 0.3, 0.3)  # Dark gray line
+    c.setLineWidth(1)
+    c.line(bar_x0, bar_y, bar_x1, bar_y)
+
+    # Draw threshold point (purple dot) - smaller
+    c.setFillColorRGB(0.58, 0.2, 0.8)  # Purple color
+    c.circle(threshold_x, bar_y, 4, stroke=0, fill=1)
+
+    # Draw "Threshold" label above with bubble - smaller, no border
+    c.setFillColorRGB(0.95, 0.95, 0.95)  # Light gray bubble
+    bubble_width = 50
+    bubble_height = 16
+    bubble_y = bar_y + 12
+    c.roundRect(threshold_x - bubble_width/2, bubble_y, bubble_width, bubble_height, 4, stroke=0, fill=1)
+    # Draw small triangle pointer
+    c.setFillColorRGB(0.95, 0.95, 0.95)
+    path = c.beginPath()
+    path.moveTo(threshold_x - 4, bubble_y)
+    path.lineTo(threshold_x + 4, bubble_y)
+    path.lineTo(threshold_x, bar_y + 4)
+    path.close()
+    c.drawPath(path, stroke=0, fill=1)
+
+    c.setFont("Regular", 8)  # Smaller font
     c.setFillColorRGB(0, 0, 0)
-    c.drawCentredString(wws_x, bar_y - 22, "You are here")
+    c.drawCentredString(threshold_x, bubble_y + 4, "Threshold")
+
+    # Draw current position point (lighter purple dot) - smaller
+    c.setFillColorRGB(0.7, 0.5, 0.85)  # Lighter purple
+    c.circle(wws_x, bar_y, 4, stroke=0, fill=1)
+
+    # Draw number label below threshold
+    c.setFont("Bold", 10)
+    c.setFillColorRGB(0, 0, 0)
+    c.drawCentredString(threshold_x, bar_y - 15, str(wws_points_threshold))
+
+    # Draw wws_points value directly below the circle
+    c.setFont("Bold", 10)
+    c.setFillColorRGB(0, 0, 0)
+    c.drawCentredString(wws_x, bar_y - 15, str(wws_points))
+
+    # Draw "You are here" label at bottom right - smaller, no border
+    c.setFillColorRGB(0.95, 0.95, 0.95)  # Light gray bubble
+    bubble_width2 = 65
+    bubble_height2 = 16
+    bubble_x_offset = 45  # Position bubble to the right
+    bubble_y2 = bar_y - 30  # Position below the line
+    c.roundRect(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2, bubble_width2, bubble_height2, 4, stroke=0, fill=1)
+
+    # Draw small triangle pointer (pointing left and up towards the circle) - shorter
+    c.setFillColorRGB(0.95, 0.95, 0.95)
+    path2 = c.beginPath()
+    path2.moveTo(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2 + bubble_height2/2 - 3)
+    path2.lineTo(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2 + bubble_height2/2 + 3)
+    path2.lineTo(wws_x + 8, bar_y - 4)  # Shorter arrow, pointing to circle
+    path2.close()
+    c.drawPath(path2, stroke=0, fill=1)
+
+    c.setFont("Regular", 8)  # Smaller font
+    c.setFillColorRGB(0, 0, 0)
+    c.drawCentredString(wws_x + bubble_x_offset, bubble_y2 + 4, "You are here")
+
+    # wws_points = variables.wws_points
+    # wws_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points - min_points) / (max_points - min_points)
+    # c.setFillColorRGB(0.2, 0.6, 1)
+    # c.circle(wws_x, bar_y, 7, stroke=0, fill=1)
+    # c.setFont("Regular", 10)
+    # c.setFillColorRGB(0, 0, 0)
+    # c.drawCentredString(wws_x, bar_y - 22, "You are here")
 
 
     sector_text = variables.sector_text
@@ -1349,9 +1426,9 @@ def draw_page13(c, w, h):
     font_size = 30
     c.setFont(font_name, font_size)
     c.setFillColorRGB(0, 0, 0)
-    draw_centered_text_safe(c, 68,font_name, font_size, 685, f"€{format_number(variables.gross_yield)}")
-    draw_centered_text_safe(c, 186,font_name, font_size, 685, f"€{format_number(variables.net_yield)}")
-    draw_centered_text_safe(c, 302,font_name, font_size, 685, f"€{format_number(variables.return_on_equity)}")
+    draw_centered_text_safe(c, 68,font_name, font_size, 685, f"{format_percentage(variables.gross_yield)}")
+    draw_centered_text_safe(c, 186,font_name, font_size, 685, f"{format_percentage(variables.net_yield)}")
+    draw_centered_text_safe(c, 302,font_name, font_size, 685, f"{format_percentage(variables.return_on_equity)}")
     draw_centered_text_safe(c, 418,font_name, font_size, 685, f"€{format_number(variables.cashflow)}")
     # c.drawString(90, 684, f"{format_percentage(variables.gross_yield)}")
     # c.drawString(210, 684, f"{format_percentage(variables.net_yield)}")
