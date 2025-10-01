@@ -2,8 +2,13 @@
 *.pdf
 /assets/charts/*
 charts/*.png
-
+Delivered/assets/charts/*
+!Delivered/Report.pdf
+!Delivered/Report_template.pdf
+!Delivered/Report_variables_mapping.pdf
 # But do not ignore these specific PDFs
 !Report_template.pdf
 !Report.pdf
 !Report_variables_mapping.pdf
+__pycache__/
+Delivered/__pycache__/
