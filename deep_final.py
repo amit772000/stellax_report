@@ -121,7 +121,15 @@ def insert_image(pdf_path, img_path, rect, page_num=0):
 
 
 def format_number(n):
-    """Format numbers like 531000 -> 531K, 1250000 -> 1.25M, etc."""
+    """Format numbers like 531000 -> 531K, 1250000 -> 1.25M, etc.
+       Rules:
+       - Billions: always 2 decimals
+       - Millions: always 2 decimals
+       - Thousands:
+           < 50,000 → 1 decimal
+           >= 50,000 → 0 decimals
+       - < 1,000: show with commas
+    """
     if n is None:
         return "0"
     n = int(n)
@@ -131,9 +139,13 @@ def format_number(n):
     elif n >= 1_000_000:
         return f"{n / 1_000_000:.2f}M"
     elif n >= 1_000:
-        return f"{n / 1_000:.2f}K"
+        if n < 50_000:
+            return f"{n / 1_000:.1f}K"  # 1 decimal
+        else:
+            return f"{n / 1_000:.0f}K"  # no decimals
     else:
         return f"{n:,}"
+
 
 
 def format_short(n):
@@ -1253,34 +1265,40 @@ def draw_wws_points_page(c, w, h):
     bar_y = 475
 
     # Draw wws_points bubble
-
     wws_points = variables.wws_points
     wws_points_threshold = variables.wws_points_threshold
-    
-    # Calculate dynamic min and max with padding
-    min_points = min(wws_points, wws_points_threshold) - 20
-    max_points = max(wws_points, wws_points_threshold) + 20
-        
-    threshold_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points_threshold - min_points) / (max_points - min_points)
-    c.setFillColorRGB(0.8, 0.8, 1)
 
-    # Ensure reasonable range
-    if max_points - min_points < 50:
-        # Add more padding if range is too small
-        center = (min_points + max_points) / 2
-        min_points = center - 25
-        max_points = center + 25
+    # --- Threshold anchored in the middle ---
+    threshold_x = (bar_x0 + bar_x1) / 2
 
-    # Calculate positions
-    wws_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points - min_points) / (max_points - min_points)
-    threshold_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points_threshold - min_points) / (max_points - min_points)
+    # --- Compute "You are here" proportional position ---
+    # Define a numeric range (domain of values)
+    data_min = 0  # adjust if your data never goes below 0
+    data_max = max(wws_points, wws_points_threshold) * 1.2  # add some headroom
 
-    # Draw the horizontal line with an arrow at the end
-    c.setStrokeColorRGB(0.3, 0.3, 0.3)  # Dark gray line
+    # Prevent divide by zero
+    if data_max == data_min:
+        data_max = data_min + 1
+
+    # Map wws_points relative to threshold
+    if wws_points <= wws_points_threshold:
+        # Left half mapping
+        wws_x = bar_x0 + (threshold_x - bar_x0) * (wws_points / wws_points_threshold)
+    else:
+        # Right half mapping
+        # Use ratio compared to threshold → max domain
+        right_span = data_max - wws_points_threshold
+        if right_span == 0:
+            right_span = 1
+        wws_x = threshold_x + (bar_x1 - threshold_x) * ((wws_points - wws_points_threshold) / right_span)
+
+    # --- Draw horizontal line with arrow ---
+    c.setStrokeColorRGB(0.3, 0.3, 0.3)
     c.setLineWidth(1)
     c.line(bar_x0, bar_y, bar_x1, bar_y)
-    c.setFillColorRGB(0.3, 0.3, 0.3)  # Dark gray arrow
-    c.setLineWidth(1)
+
+    # Draw arrow at the right end
+    c.setFillColorRGB(0.3, 0.3, 0.3)
     arrow_length = 6
     arrow_width = 4
     path = c.beginPath()
@@ -1291,63 +1309,72 @@ def draw_wws_points_page(c, w, h):
     path.close()
     c.drawPath(path, stroke=1, fill=1)
 
-    # Draw threshold point (purple dot) - smaller
-    c.setFillColorRGB(0.58, 0.2, 0.8)  # Purple color
+    # --- Draw threshold point (purple circle) ---
+    c.setFillColorRGB(0.58, 0.2, 0.8)
     c.circle(threshold_x, bar_y, 4, stroke=0, fill=1)
 
-    # Draw "Threshold" label above with bubble - smaller, no border
-    c.setFillColorRGB(0.95, 0.95, 0.95)  # Light gray bubble
+    # Label "Threshold" bubble
+    c.setFillColorRGB(0.95, 0.95, 0.95)
     bubble_width = 50
     bubble_height = 16
     bubble_y = bar_y + 12
     c.roundRect(threshold_x - bubble_width/2, bubble_y, bubble_width, bubble_height, 4, stroke=0, fill=1)
-    # Draw small triangle pointer
-    c.setFillColorRGB(0.95, 0.95, 0.95)
     path = c.beginPath()
     path.moveTo(threshold_x - 4, bubble_y)
     path.lineTo(threshold_x + 4, bubble_y)
     path.lineTo(threshold_x, bar_y + 4)
     path.close()
     c.drawPath(path, stroke=0, fill=1)
-
-    c.setFont("Regular", 8)  # Smaller font
+    c.setFont("Regular", 8)
     c.setFillColorRGB(0, 0, 0)
     c.drawCentredString(threshold_x, bubble_y + 4, "Threshold")
 
-    # Draw current position point (lighter purple dot) - smaller
-    c.setFillColorRGB(0.7, 0.5, 0.85)  # Lighter purple
-    c.circle(wws_x, bar_y, 4, stroke=0, fill=1)
-
-    # Draw number label below threshold
+    # Draw threshold value
     c.setFont("Bold", 10)
-    c.setFillColorRGB(0, 0, 0)
     c.drawCentredString(threshold_x, bar_y - 15, str(wws_points_threshold))
 
-    # Draw wws_points value directly below the circle
+    # --- Draw "You are here" circle ---
+    c.setFillColorRGB(0.7, 0.5, 0.85)
+    c.circle(wws_x, bar_y, 4, stroke=0, fill=1)
+
+    # Draw value below circle
     c.setFont("Bold", 10)
     c.setFillColorRGB(0, 0, 0)
     c.drawCentredString(wws_x, bar_y - 15, str(wws_points))
 
-    # Draw "You are here" label at bottom right - smaller, no border
-    c.setFillColorRGB(0.95, 0.95, 0.95)  # Light gray bubble
+    # --- "You are here" label bubble ---
+    c.setFillColorRGB(0.95, 0.95, 0.95)
     bubble_width2 = 65
     bubble_height2 = 16
-    bubble_x_offset = 45  # Position bubble to the right
-    bubble_y2 = bar_y - 30  # Position below the line
-    c.roundRect(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2, bubble_width2, bubble_height2, 4, stroke=0, fill=1)
+    bubble_y2 = bar_y - 25  # vertical position for label bubble
 
-    # Draw small triangle pointer (pointing left and up towards the circle) - shorter
-    c.setFillColorRGB(0.95, 0.95, 0.95)
+    if wws_points < wws_points_threshold:
+        # Place label bubble to the LEFT of the circle
+        bubble_x = wws_x - 45
+        arrow_start_x = bubble_x + bubble_width2 / 2 - 5 # right edge of bubble
+        arrow_target_x = wws_x
+    else:
+        # Place label bubble to the RIGHT of the circle
+        bubble_x = wws_x + 45
+        arrow_start_x = bubble_x - bubble_width2 / 2 + 2 # left edge of bubble
+        arrow_target_x = wws_x
+
+    # Draw rounded rectangle bubble
+    c.roundRect(bubble_x - bubble_width2/2, bubble_y2, bubble_width2, bubble_height2, 4, stroke=0, fill=1)
+
+    # Draw small triangle pointer (arrow to circle)
     path2 = c.beginPath()
-    path2.moveTo(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2 + bubble_height2/2 - 3)
-    path2.lineTo(wws_x + bubble_x_offset - bubble_width2/2, bubble_y2 + bubble_height2/2 + 3)
-    path2.lineTo(wws_x + 8, bar_y - 4)  # Shorter arrow, pointing to circle
+    path2.moveTo(arrow_start_x, bubble_y2 + bubble_height2)
+    path2.lineTo(arrow_start_x, bubble_y2 + bubble_height2 - 3)
+    path2.lineTo(arrow_target_x, bar_y)
     path2.close()
     c.drawPath(path2, stroke=0, fill=1)
 
-    c.setFont("Regular", 8)  # Smaller font
+    # Draw text inside bubble
+    c.setFont("Regular", 8)
     c.setFillColorRGB(0, 0, 0)
-    c.drawCentredString(wws_x + bubble_x_offset, bubble_y2 + 4, "You are here")
+    c.drawCentredString(bubble_x, bubble_y2 + 4, "You are here")
+
 
     # wws_points = variables.wws_points
     # wws_x = bar_x0 + (bar_x1 - bar_x0) * (wws_points - min_points) / (max_points - min_points)
@@ -1677,5 +1704,7 @@ if __name__ == "__main__":
     if variables.energy_label != "-":
         energy_label_img = f"energy_label_{variables.energy_label}.png"
         insert_image("Template_filled.pdf", f"assets/pictures/{energy_label_img}", fitz.Rect(30, 165, 290, 280), page_num=15)
+    else:        
+        insert_image("Template_filled.pdf", f"assets/pictures/energy_label_NA.png", fitz.Rect(60, 155, 260, 280), page_num=15)
 
     print("✅ Multi-page PDF generated: Template_filled.pdf")
