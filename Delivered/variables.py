@@ -5,53 +5,53 @@ city="Amsterdam"
 report_date="19.06.2025"
 reference_date="01.01.2025"
 report_link="https://drive.google.com/drive/folders/1W16DAJx3sVnM26RHR-kjDJ0ouoLJ6SFm"
-vacant_value=531000 #can be anywhere between 50000 and 10000000
-rented_value=454000 #can be anywhere between 50000 and 10000000
-market_rent=2393 #can be anywhere between 300 and 10000
-wws_points=195 #can be anywhere between 30 and 500
-wws_points_rent=1300 #can be anywhere between 200 and 5000
+vacant_value=1100000 #can be anywhere between 50000 and 10000000
+rented_value=1200000 #can be anywhere between 50000 and 10000000
+market_rent=900 #can be anywhere between 300 and 10000
+wws_points=80 #can be anywhere between 30 and 500
+wws_points_rent=900 #can be anywhere between 200 and 5000
 
 property_type="Apartment"
-sqm=79 #can be anywhere between 10 and 800
+sqm=130 #can be anywhere between 10 and 800
 year=1963
 lot_size=0 #can be anywhere between 0 and 10000
-energy_label="C"
-contract_rent=2250 #can be anywhere between 300 and 10000
-vve=128 #can be anywhere between 0 and 2000
-erfpact_date="31.08.2051"
-erfpacht_amount=4000
+energy_label="-"
+contract_rent=300 #can be anywhere between 300 and 10000
+vve=90 #can be anywhere between 0 and 2000
+erfpact_date="-"
+erfpacht_amount="1000"
 
-property_type_source="Stellax"
+property_type_source="Kadaster (BAG)"
 sqm_source="Kadaster (BAG)"
 year_source="Kadaster (BAG)"
 lot_size_source="Kadaster (BAG)"
-energy_label_source="EP-online"
-contract_rent_source="Client"
-wws_points_source="Stellax"
-wws_rent_source="Stellax"
-vve_source="Client"
-erfpact_date_source="Client"
-erfpacht_amount_source="Client"
+energy_label_source="Kadaster (BAG)"
+contract_rent_source="Kadaster (BAG)"
+wws_points_source="Kadaster (BAG)"
+wws_rent_source="Kadaster (BAG)"
+vve_source="Kadaster (BAG)"
+erfpact_date_source="Kadaster (BAG)"
+erfpacht_amount_source="Kadaster (BAG)"
 
 property_overview_1="This apartment of 79 m² is located in Buitenveldert, a popular area known for its residential character and livability. With an energy label of C, the property offers reasonable energy performance, contributing to lower energy costs and increased appeal."
 property_overview_2="The property has been evaluated across multiple dimensions including its vacant market value, value in rented state, rental potential, and WWS score, all benchmarked against local market data and similar homes in the area."
 #property_google_photo.png #<-------------------------------------
 #cadastral_map.png #<-------------------------------------
 
-vacant_value_score=0.93 #can be anywhere between 0% and 100%
-vacant_value_low=480000 #can be anywhere between 50000 and 10000000
-vacant_value_high=590000 #can be anywhere between 50000 and 10000000
+vacant_value_score=0.07 #can be anywhere between 0% and 100%
+vacant_value_low=990000 #can be anywhere between 50000 and 10000000
+vacant_value_high=1200000 #can be anywhere between 50000 and 10000000
 
 data = {
     "Sqm": [
         45, 50, 55, 58, 60, 62, 65, 67, 70, 72,
         75, 78, 80, 82, 85, 88, 90, 92, 95, 98,
-        100, 105, 108, 110, 115, 118, 120, 125, 130, 135, 140, 145
+        100, 105, 108, 110, 115, 118, 120, 125, 130, 135, 140, 200
     ],
     "Price_m2": [
-        8000, 7800, 7700, 7600, 7450, 7200, 7100, 6900, 6700, 6600,
-        6400, 6300, 6150, 6000, 5900, 5750, 5650, 5600, 5500, 5400,
-        5300, 5200, 5150, 5100, 5050, 5000, 4950, 4900, 4850, 4800, 4700, 4600
+        4000, 5000, 7700, 7600, 7450, 7200, 7100, 6900, 6700, 6600,
+        6400, 6300, 6150, 6000, 4900, 5750, 5650, 5600, 5500, 5400,
+        5300, 5200, 6300, 5100, 5050, 5000, 4950, 4900, 4850, 4800, 4700, 10000
     ]
 }
 
@@ -67,11 +67,11 @@ data = {
         "Boeckenburg 3, 1082CT Amsterdam",
         "Koxhorn 23 2, 1082EV Amsterdam"
     ],
-    "Distance_meters": [90, 87, 124, 133, 39],
+    "Distance_meters": [200, 9, 9, 9, 9],
     "Type": ["Apartment"] * 5,
-    "Asking_price": [479000, 475000, 500000, 625000, 450000],
+    "Asking_price": [1000000, 1000000, 1000000, 1000000, 1000000],
     "Bid_above_asking_pct": [5.4, 11.8, 12.2, 0.0, 1.7],
-    "Adjusted_price": [512000, 568000, 596000, 613000, 511000],
+    "Adjusted_price": [1000000, 1000000, 1000000, 1000000, 1000000],
     "Square_meters": [80, 77, 78, 85, 79],
     "Lot_size": [0, 0, 0, 0, 0],
     "Year": [1962, 1962, 1963, 1963, 1962],
@@ -82,35 +82,35 @@ vacant_values_comps_df = pd.DataFrame(data)
 
 #vacant_values_comps_df.png #<-------------------------------------
 
-vacant_value_optimal_asking=475000 #can be anywhere between 50000 and 10000000
-vacant_value_final_price_paid=535000 #can be anywhere between 50000 and 10000000
+vacant_value_optimal_asking=1100000 #can be anywhere between 50000 and 10000000
+vacant_value_final_price_paid=1200000 #can be anywhere between 50000 and 10000000
 
 
 data = {
-    "Price_paid": [460000, 495000, 518000, 535000, 532000, 525000, 515000, 500000],
-    "Asking_price": [400000, 425000, 450000, 475000, 500000, 525000, 550000, 575000]
+    "Price_paid": [1100000, 1100000, 1200000, 1300000, 1400000, 1500000, 1600000, 1700000],
+    "Asking_price": [1000000, 1100000, 1200000, 1300000, 1400000, 1500000, 1600000, 1700000]
 }
 
 asking_vs_price_paid_df = pd.DataFrame(data)
 
 
-vacant_value_optimal_asking_low=475000 #can be anywhere between 50000 and 10000000
-vacant_value_optimal_asking_high=500000 #can be anywhere between 50000 and 10000000
+vacant_value_optimal_asking_low=1200000 #can be anywhere between 50000 and 10000000
+vacant_value_optimal_asking_high=1500000 #can be anywhere between 50000 and 10000000
 
-percent_sold_above_asking=0.71 #can be anywhere between 0 and 0.99
-average_bidding=0.096 #can be anywhere between 0 and 0.99
+percent_sold_above_asking=0.09 #can be anywhere between 0 and 0.99
+average_bidding=0.12 #can be anywhere between 0 and 0.99
 
 
 data = {
-    "Bid_offered": [450000, 475000, 500000, 525000, 550000, 575000, 600000, 625000],
+    "Bid_offered": [1000000, 1100000, 1200000, 1300000, 1400000, 1500000, 1600000, 1700000],
     "Chance_of_winning_pct": [5, 13, 28, 47, 66, 81, 91, 96]
 }
 
 bid_vs_winning_chance_df = pd.DataFrame(data)
 
 
-vacant_value_demand_score=0.89 #can be anywhere between 0 and 1
-vacant_value_market_descitption="The market is hot!"
+vacant_value_demand_score=0.09 #can be anywhere between 0 and 1
+vacant_value_market_descitption="The market is cold!"
 
 
 data = {
@@ -129,7 +129,7 @@ vacant_value_index_reference_date="05/24=100"
 
 
 market_rent_score=0.89 #can be anywhere between 0% and 100%
-market_rent_low=1920 #can be anywhere between 300 and 10000
+market_rent_low=300 #can be anywhere between 300 and 10000
 market_rent_high=2934 #can be anywhere between 300 and 10000
 
 
@@ -140,9 +140,9 @@ data = {
         105, 110, 115, 118, 120, 125, 128, 130, 135, 140, 145
     ],
     "Rent_m2": [
-        47, 44, 42, 39, 41, 38, 35, 37, 33, 36,
-        31, 29, 27, 28, 26, 25, 22, 23, 21, 20,
-        22, 24, 23, 21, 20, 22, 24, 25, 23, 26, 27
+        20, 44, 42, 39, 41, 38, 35, 37, 16, 36,
+        100, 29, 11, 28, 26, 25, 22, 23, 32, 20,
+        22, 24, 86, 21, 20, 22, 43, 25, 23, 26, 27
     ]
 }
 
@@ -172,7 +172,7 @@ market_rent_comps_df = pd.DataFrame(data)
 
 #market_rent_comps_df.png #<-------------------------------------
 
-market_rent_demand_score=0.95 #can be anywhere between 0 and 1
+market_rent_demand_score=0.09 #can be anywhere between 0 and 1
 market_rent_market_descitption="The market is hot!"
 #market_rent_market_emoji.png
 
@@ -210,10 +210,10 @@ wws_points_breakdown_dict={
     "Monument rent increase": "+10%"
 }
 
-gross_yield=0.054 #can be anywhere between 0.5% and 10.9%
-net_yield=0.041 #can be anywhere between 0.5% and 10.9%
-return_on_equity=0.025 #can be anywhere between 0.5% and 10.9%
-cashflow=767 #can be anywhere between -9000 and 30000
+gross_yield=0.11 #can be anywhere between 0.5% and 10.9%
+net_yield=0.1 #can be anywhere between 0.5% and 10.9%
+return_on_equity=0.108 #can be anywhere between 0.5% and 10.9%
+cashflow=5000 #can be anywhere between -9000 and 30000
 
 data = {
     "LTV": ["50%", "60%", "70%", "80%", "90%"],
@@ -238,12 +238,12 @@ data = {
 
 monthly_cash_flow_df = pd.DataFrame(data)
 
-bar_kk=0.0595 #can be anywhere between 0.5% and 10.9%
-nar_kk=0.0508 #can be anywhere between 0.5% and 10.9%
+bar_kk=0.109 #can be anywhere between 0.5% and 10.9%
+nar_kk=0.10 #can be anywhere between 0.5% and 10.9%
 
-capitalisation_factor=16.8 #can be anywhere between 5 and 99
+capitalisation_factor=20 #can be anywhere between 5 and 99
 vacant_value_ratio=0.85 #can be anywhere between 20% and 100%
-rent_vacant_value_ratio=0.0508 #can be anywhere between 0.5% and 10.9%
+rent_vacant_value_ratio=0.1 #can be anywhere between 0.5% and 10.9%
 
 effective_rent_yearly=27000
 effective_rent_per_sqm=28.48
@@ -262,11 +262,11 @@ VVE_yearly=1536
 other_running_costs=0
 total_running_costs=3992
 
-running_costs_to_effective_rent_percentage=0.14
-net_rental_income_to_effective_rent_percentage=0.86
+running_costs_to_effective_rent_percentage=0.08
+net_rental_income_to_effective_rent_percentage=0.92
 
 net_rental_income=23072
-nar_von=0.0457
+nar_von=0.1
 rented_value_von=505075
 
 legal_and_delivery_costs=3859
@@ -295,14 +295,14 @@ energy_label_certificate_holder="EP Certificatie B.V."
 
 data = {
     "Label": ["A+++", "A++", "A+", "A", "B", "C", "D", "E", "F", "G"],
-    "VV": [584000, 547000, 544000, 538000, 535000, 531000, 526000, 522000, 520000, 518000],
-    "ΔVV": [53000, 16000, 13000, 7000, 4000, 0, -5000, -9000, -11000, -13000],
-    "MV": [500000, 477000, 475000, 470000, 467000, 454000, 460000, 327000, 324000, 319000],
-    "ΔMV": [46000, 23000, 21000, 16000, 13000, 0, 6000, -127000, -130000, -135000],
-    "WWS": [244, 239, 233, 224, 212, 195, 190, 177, 172, 167],
-    "ΔWWS": [49, 44, 38, 29, 17, 0, -5, -18, -23, -28],
+    "VV": [1200000, 547000, 544000, 538000, 535000, 531000, 526000, 522000, 520000, 518000],
+    "ΔVV": [53000, 16000, 13000, 0, -1000, -2000, -5000, -9000, -11000, -13000],
+    "MV": [1100000, 477000, 475000, 470000, 467000, 454000, 460000, 327000, 324000, 319000],
+    "ΔMV": [46000, 23000, 21000, 0, -1000, -2000, -5000, -127000, -130000, -135000],
+    "WWS": [244, 239, 233, 224, 212, 195, 190, 177, 90, 80],
+    "ΔWWS": [49, 44, 38, 0, -1, -3, -5, -18, -23, -28],
     "Rent": [2482, 2455, 2450, 2422, 2408, 2393, 2381, 2320, 2380, 2376],
-    "ΔRent": [89, 62, 57, 29, 15, 0, -12, -113, -14, -17]
+    "ΔRent": [89, 62, 57, 0, -5, -9, -12, -113, -14, -17]
 }
 
 energy_label_impact_df = pd.DataFrame(data)

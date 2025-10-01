@@ -1,3 +1,9 @@
 .venv/
-.pdf
+*.pdf
 /assets/charts/*
+charts/*.png
+
+# But do not ignore these specific PDFs
+!Report_template.pdf
+!Report.pdf
+!Report_variables_mapping.pdf
